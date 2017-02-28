@@ -20,8 +20,8 @@ class TwitchStreamHandler(web.RequestHandler):
     async def get(self):
         data = await self.twitch.get_stream_file()
         response = await self.streamable.upload(
-            data,
-            config['TWITCH_CHANNEL']
+            config['TWITCH_CHANNEL'],
+            data
         )
         self.write_json(success({
             'url': self.streamable.video_url(response.shortcode)
