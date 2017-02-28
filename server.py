@@ -6,7 +6,8 @@ from tornado.escape import json_encode
 from tornado.platform.asyncio import AsyncIOMainLoop
 
 from config import config
-from response import success, error
+from error import ApiException
+from response import success, error, error_with
 from streamable import Streamable
 from twitch import Twitch, AsyncTwitchWrapper
 
@@ -18,7 +19,7 @@ class TwitchStreamHandler(web.RequestHandler):
         self.streamable = streamable
 
     async def get(self):
-        data = await self.twitch.get_stream_file()
+        data = await self.twitch.get_stream_data()
         response = await self.streamable.upload(
             config['TWITCH_CHANNEL'],
             data
@@ -27,13 +28,19 @@ class TwitchStreamHandler(web.RequestHandler):
             'url': self.streamable.video_url(response.shortcode)
         }))
 
+    def write_error(self, status_code, exc_info):
+        error_class = exc_info[0]
+        error_object = exc_info[1]
+
+        if issubclass(error_class, ApiException):
+            self.write_json(error_with(error_object.to_response()))
+        else:
+            self.write_json(error())
+
     def write_json(self, data):
         self.add_header('Content-Type', 'application/json')
         self.write(json_encode(data))
         self.finish()
-
-    def write_error(self, status_code, **kwargs):
-        self.write_json(error())
 
 
 def application(twitch, streamable):
@@ -57,6 +64,8 @@ def main():
             config['TWITCH_CHANNEL']
         )
     )
+    async_twitch.initialize()
+
     streamable = Streamable(
         client=httpclient.AsyncHTTPClient()
     )

@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from tornado import httpclient
 
+from error import UploadingException
 from util import multipart_producer
 
 
@@ -46,12 +47,16 @@ class Streamable(object):
             request_timeout=self.REQUEST_TIMEOUT
         )
 
-        result = await self.client.fetch(request)
+        result = await self.client.fetch(request, raise_error=False)
+
+        if result.code != 200:
+            raise UploadingException
+
         return UploadResult(
             json.loads(str(result.body.decode("utf-8")))
         )
 
     @staticmethod
     def _generate_video_name(channel_name):
-        return "{:%m.%b.%y %H:%M} {channel}" \
+        return "{:%d.%m.%y %H:%M} {channel}" \
             .format(datetime.now(), channel=channel_name)
