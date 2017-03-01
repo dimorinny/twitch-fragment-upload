@@ -29,14 +29,14 @@ class Streamable(object):
     def video_url(self, video_id):
         return self.UPLOADED_VIDEO_TEMPLATE.format(video_id=video_id)
 
-    async def upload(self, channel_name, data):
+    async def upload(self, name, data):
         boundary = uuid4().hex
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
 
         producer = partial(
             multipart_producer,
             boundary,
-            self._generate_video_name(channel_name),
+            name,
             data
         )
         request = httpclient.HTTPRequest(
@@ -55,8 +55,3 @@ class Streamable(object):
         return UploadResult(
             json.loads(str(result.body.decode("utf-8")))
         )
-
-    @staticmethod
-    def _generate_video_name(channel_name):
-        return "{:%d.%m.%y %H:%M} {channel}" \
-            .format(datetime.now(), channel=channel_name)

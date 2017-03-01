@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 
 from tornado import httpclient
 from tornado import web
@@ -12,6 +13,11 @@ from streamable import Streamable
 from twitch import Twitch, AsyncTwitchWrapper
 
 
+def generate_video_name(channel_name):
+    return "{:%d.%m.%y %H:%M} {channel}" \
+        .format(datetime.now(), channel=channel_name)
+
+
 # noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
 class TwitchStreamHandler(web.RequestHandler):
     def initialize(self, twitch, streamable):
@@ -19,13 +25,17 @@ class TwitchStreamHandler(web.RequestHandler):
         self.streamable = streamable
 
     async def get(self):
+        name = generate_video_name(config['TWITCH_CHANNEL'])
+
         data = await self.twitch.get_stream_data()
         response = await self.streamable.upload(
-            config['TWITCH_CHANNEL'],
+            name,
             data
         )
+
         self.write_json(success({
-            'url': self.streamable.video_url(response.shortcode)
+            'url': self.streamable.video_url(response.shortcode),
+            'name': name
         }))
 
     def write_error(self, status_code, exc_info):
