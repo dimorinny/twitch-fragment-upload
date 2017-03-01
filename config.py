@@ -3,7 +3,7 @@ import os
 config = {
     'TWITCH_OAUTH': None,
     'TWITCH_CHANNEL': None,
-    'RING_BUFFER_SIZE': 1024 * 1024 * 20,  # 20 MB
+    'RING_BUFFER_SIZE': 1024 * 1024 * 10,  # 10 MB
     'PORT': 8080
 }
 

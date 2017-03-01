@@ -6,6 +6,7 @@ from error import StreamBufferIsEmptyException
 
 
 class Twitch(object):
+    RING_BUFFER_SIZE_KEY = 'ringbuffer-size'
     OAUTH_TOKEN_KEY = 'oauth_token'
     LIVESTREAMER_PLUGIN_TWITCH = 'twitch'
     RESOLUTION_KEY = 'medium'
@@ -39,14 +40,16 @@ class Twitch(object):
     def stream_initialized(self):
         return self.stream is not None
 
-    # TODO: Initialize livestreamer's ring buffer size
     def _init_stream(self, oauth, channel):
         session = Livestreamer()
+
         session.set_plugin_option(
             self.LIVESTREAMER_PLUGIN_TWITCH,
             self.OAUTH_TOKEN_KEY,
             oauth
         )
+        session.set_option(self.RING_BUFFER_SIZE_KEY, self.buffer)
+
         streams = session.streams(self._generate_stream_url(channel))
         return streams.get(self.RESOLUTION_KEY)
 
