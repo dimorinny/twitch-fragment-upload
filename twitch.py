@@ -6,7 +6,7 @@ from error import StreamBufferIsEmptyException
 
 
 class Twitch(object):
-    BUFFER_PING_PART = 3
+    BUFFER_PING_PART = 5
 
     RING_BUFFER_SIZE_KEY = 'ringbuffer-size'
     OAUTH_TOKEN_KEY = 'oauth_token'
