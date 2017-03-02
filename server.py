@@ -62,6 +62,12 @@ def application(twitch, streamable):
     ])
 
 
+async def pereodic_ping_read(twitch, interval):
+    while True:
+        await twitch.ping_read()
+        await asyncio.sleep(interval)
+
+
 def main():
     AsyncIOMainLoop().install()
     loop = asyncio.get_event_loop()
@@ -76,6 +82,8 @@ def main():
     )
     async_twitch.initialize()
 
+    asyncio.Task(pereodic_ping_read(async_twitch, 60))
+
     streamable = Streamable(
         client=httpclient.AsyncHTTPClient()
     )
@@ -84,7 +92,6 @@ def main():
     app.listen(config['PORT'])
 
     print('Listening port {port}...'.format(port=config['PORT']))
-
     loop.run_forever()
 
 
