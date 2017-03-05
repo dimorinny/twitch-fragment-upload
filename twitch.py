@@ -37,7 +37,14 @@ class Twitch(object):
             self.initialize()
             raise StreamBufferIsEmptyException
 
-        return self.stream.read(self.buffer_size)
+        data = self.stream.read(self.buffer_size)
+        print('Read: {length}'.format(length=len(data)))
+
+        if len(data) == 0:
+            self.initialize()
+            raise StreamBufferIsEmptyException
+
+        return data
 
     def ping_read(self):
         if self.initialized:
