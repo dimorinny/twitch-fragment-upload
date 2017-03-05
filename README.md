@@ -41,7 +41,7 @@ After that server returns uploading with video link and name. For example after 
 }
 ```
 
-When some error occured during recognition process you got reponse like this:
+When some error occurred during recognition process you got reponse like this:
 
 ```
 {
@@ -49,7 +49,7 @@ When some error occured during recognition process you got reponse like this:
   "response": {
     "message": "Stream buffer is empty",
     "code": 100
-  },
+  }
 }
 ```
 
