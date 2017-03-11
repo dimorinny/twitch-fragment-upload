@@ -4,6 +4,7 @@ config = {
     'TWITCH_OAUTH': None,
     'TWITCH_CHANNEL': None,
     'RING_BUFFER_SIZE': 1024 * 1024 * 20,  # 20 MB
+    'STREAM_RESOLUTION': 'medium',
     'PORT': 8080
 }
 

@@ -76,6 +76,7 @@ def main():
         loop,
         Twitch(
             config['RING_BUFFER_SIZE'],
+            config['STREAM_RESOLUTION'],
             config['TWITCH_OAUTH'],
             config['TWITCH_CHANNEL']
         )

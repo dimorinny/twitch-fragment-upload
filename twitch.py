@@ -11,10 +11,10 @@ class Twitch(object):
     RING_BUFFER_SIZE_KEY = 'ringbuffer-size'
     OAUTH_TOKEN_KEY = 'oauth_token'
     LIVESTREAMER_PLUGIN_TWITCH = 'twitch'
-    RESOLUTION_KEY = 'medium'
 
-    def __init__(self, buffer_size, oauth, channel):
+    def __init__(self, buffer_size, resolution, oauth, channel):
         self.oauth = oauth
+        self.resolution = resolution
         self.channel = channel
         self.buffer_size = buffer_size + (buffer_size // self.BUFFER_PING_PART)
         self.initialized = False
@@ -66,7 +66,7 @@ class Twitch(object):
         session.set_option(self.RING_BUFFER_SIZE_KEY, self.buffer_size)
 
         streams = session.streams(self._generate_stream_url(channel))
-        return streams.get(self.RESOLUTION_KEY)
+        return streams.get(self.resolution)
 
     @staticmethod
     def _generate_stream_url(channel):

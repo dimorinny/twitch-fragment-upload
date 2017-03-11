@@ -19,7 +19,7 @@ class UploadResult(object):
 
 class Streamable(object):
     UPLOAD_URL = 'https://api.streamable.com/upload'
-    UPLOADED_VIDEO_TEMPLATE = 'https://streamable.com/{video_id}'
+    UPLOADED_VIDEO_TEMPLATE = 'https://streamable.com/e/{video_id}'
 
     REQUEST_TIMEOUT = 60 * 3  # 3 minutes
 
