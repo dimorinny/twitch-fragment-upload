@@ -49,6 +49,8 @@ class Twitch(object):
     def ping_read(self):
         if self.initialized:
             self.stream.read(self.buffer_size // self.BUFFER_PING_PART)
+        else:
+            self.initialize()
 
     def stream_initialized(self):
         return self.stream is not None
