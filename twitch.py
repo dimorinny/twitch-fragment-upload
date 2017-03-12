@@ -34,6 +34,7 @@ class Twitch(object):
 
         # Try to initialize again
         if not self.initialized:
+            print('Read: Try to initialize')
             self.initialize()
             raise StreamBufferIsEmptyException
 
@@ -41,6 +42,7 @@ class Twitch(object):
         print('Read: {length}'.format(length=len(data)))
 
         if len(data) == 0:
+            print('Read: Try to initialize')
             self.initialize()
             raise StreamBufferIsEmptyException
 
@@ -48,8 +50,10 @@ class Twitch(object):
 
     def ping_read(self):
         if self.initialized:
-            self.stream.read(self.buffer_size // self.BUFFER_PING_PART)
+            data = self.stream.read(self.buffer_size // self.BUFFER_PING_PART)
+            print('Ping Read: {length}'.format(length=len(data)))
         else:
+            print('Ping Read: Try to initialize')
             self.initialize()
 
     def stream_initialized(self):
