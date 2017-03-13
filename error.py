@@ -23,3 +23,8 @@ class StreamBufferIsEmptyException(ApiException):
 class UploadingException(ApiException):
     MESSAGE = 'Upload video error'
     CODE = 101
+
+
+class UploadingCheckLimitException(ApiException):
+    MESSAGE = 'Upload video check limit'
+    CODE = 102

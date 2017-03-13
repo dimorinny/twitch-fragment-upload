@@ -1,11 +1,11 @@
+import asyncio
 import json
-from datetime import datetime
 from functools import partial
 from uuid import uuid4
 
 from tornado import httpclient
 
-from error import UploadingException
+from error import UploadingException, UploadingCheckLimitException
 from util import multipart_producer
 
 
@@ -22,6 +22,8 @@ class Streamable(object):
     UPLOADED_VIDEO_TEMPLATE = 'https://streamable.com/e/{video_id}'
 
     REQUEST_TIMEOUT = 60 * 3  # 3 minutes
+    RETRIES_COUNT = 10
+    RETRIES_INTERVAL = 10  # 10 seconds
 
     def __init__(self, client):
         self.client = client
@@ -30,6 +32,26 @@ class Streamable(object):
         return self.UPLOADED_VIDEO_TEMPLATE.format(video_id=video_id)
 
     async def upload(self, name, data):
+        for _ in range(self.RETRIES_COUNT):
+            answer = await self._do_upload(name, data)
+
+            print(answer)
+
+            if answer.code != 200:
+                raise UploadingException
+
+            result = UploadResult(
+                json.loads(str(answer.body.decode("utf-8")))
+            )
+
+            if self._check_uploading(result):
+                return result
+
+            await asyncio.sleep(self.RETRIES_INTERVAL)
+
+        raise UploadingCheckLimitException
+
+    async def _do_upload(self, name, data):
         boundary = uuid4().hex
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
 
@@ -47,11 +69,16 @@ class Streamable(object):
             request_timeout=self.REQUEST_TIMEOUT
         )
 
-        result = await self.client.fetch(request, raise_error=False)
+        return await self.client.fetch(request, raise_error=False)
 
-        if result.code != 200:
-            raise UploadingException
-
-        return UploadResult(
-            json.loads(str(result.body.decode("utf-8")))
+    async def _check_uploading(self, result):
+        request = httpclient.HTTPRequest(
+            url=self.video_url(result.shortcode),
+            request_timeout=self.REQUEST_TIMEOUT
         )
+
+        print('Checking uploaded video with shortcode: {shortcode}'.format(shortcode=result.shortcode))
+
+        answer = await self.client.fetch(request, raise_error=False)
+
+        return answer.code == 200
