@@ -1,12 +1,10 @@
-import asyncio
-import json
-from functools import partial
-from uuid import uuid4
+from concurrent.futures import ThreadPoolExecutor
+from io import BytesIO
 
-from tornado import httpclient
+import requests
+import time
 
 from error import UploadingException, UploadingCheckLimitException
-from util import multipart_producer
 
 
 class UploadResult(object):
@@ -31,54 +29,50 @@ class Streamable(object):
     def video_url(self, video_id):
         return self.UPLOADED_VIDEO_TEMPLATE.format(video_id=video_id)
 
-    async def upload(self, name, data):
+    def upload(self, name, data):
         for _ in range(self.RETRIES_COUNT):
-            answer = await self._do_upload(name, data)
+            answer = self._do_upload(name, data)
 
             print(answer)
 
-            if answer.code != 200:
+            if answer.status_code != requests.codes.ok:
                 raise UploadingException
 
-            result = UploadResult(
-                json.loads(str(answer.body.decode("utf-8")))
-            )
+            result = UploadResult(answer.json())
+
+            print('Checking uploaded video with shortcode: {shortcode}'
+                  .format(shortcode=result.shortcode))
 
             if self._check_uploading(result):
                 return result
 
-            await asyncio.sleep(self.RETRIES_INTERVAL)
+            time.sleep(self.RETRIES_INTERVAL)
 
         raise UploadingCheckLimitException
 
-    async def _do_upload(self, name, data):
-        boundary = uuid4().hex
-        headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
+    def _do_upload(self, name, data):
+        return requests.post(
+            url=self.UPLOAD_URL,
+            files={name: BytesIO(data)}
+        )
 
-        producer = partial(
-            multipart_producer,
-            boundary,
+    def _check_uploading(self, result):
+        return requests.get(self.video_url(result.shortcode)).status_code == 200
+
+
+class AsyncStreamableWrapper(object):
+    def __init__(self, loop, streamable):
+        self.executor = ThreadPoolExecutor()
+        self.loop = loop
+        self.streamable = streamable
+
+    def video_url(self, video_id):
+        return self.streamable.video_url(video_id)
+
+    async def upload(self, name, data):
+        return await self.loop.run_in_executor(
+            self.executor,
+            self.streamable.upload,
             name,
             data
         )
-        request = httpclient.HTTPRequest(
-            method='POST',
-            url=self.UPLOAD_URL,
-            headers=headers,
-            body_producer=producer,
-            request_timeout=self.REQUEST_TIMEOUT
-        )
-
-        return await self.client.fetch(request, raise_error=False)
-
-    async def _check_uploading(self, result):
-        request = httpclient.HTTPRequest(
-            url=self.video_url(result.shortcode),
-            request_timeout=self.REQUEST_TIMEOUT
-        )
-
-        print('Checking uploaded video with shortcode: {shortcode}'.format(shortcode=result.shortcode))
-
-        answer = await self.client.fetch(request, raise_error=False)
-
-        return answer.code == 200
