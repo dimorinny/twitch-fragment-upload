@@ -7,7 +7,8 @@ config = {
     'VK_GROUP_ID': None,
     'RING_BUFFER_SIZE': 1024 * 1024 * 15,  # 15 MB
     'STREAM_RESOLUTION': 'medium',
-    'PORT': 8080
+    'PORT': 8080,
+    'TIMEZONE': 'UTC'
 }
 
 for k, v in config.items():

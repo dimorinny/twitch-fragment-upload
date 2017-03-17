@@ -1,3 +1,4 @@
 tornado==4.4.2
 livestreamer==1.12.2
 requests==2.11.0
+pytz==2016.6.1

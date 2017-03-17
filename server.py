@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 
+import pytz
 from tornado import httpclient
 from tornado import web
 from tornado.escape import json_encode
@@ -13,9 +14,9 @@ from upload import VkUploader, AsyncUploaderWrapper
 from twitch import Twitch, AsyncTwitchWrapper
 
 
-def generate_video_name(channel_name):
+def generate_video_name(channel_name, timezone):
     return "{:%d.%m.%y %H:%M} {channel}" \
-        .format(datetime.now(), channel=channel_name)
+        .format(datetime.now(timezone), channel=channel_name)
 
 
 # noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
@@ -23,9 +24,10 @@ class TwitchStreamHandler(web.RequestHandler):
     def initialize(self, twitch, uploader):
         self.twitch = twitch
         self.uploader = uploader
+        self.timezone = pytz.timezone(config['TIMEZONE'])
 
     async def get(self):
-        name = generate_video_name(config['TWITCH_CHANNEL'])
+        name = generate_video_name(config['TWITCH_CHANNEL'], self.timezone)
 
         data = await self.twitch.get_stream_data()
         response = await self.uploader.upload(name, data)
@@ -87,7 +89,7 @@ def main():
         uploader=VkUploader(
             client=httpclient.AsyncHTTPClient(),
             token=config['VK_OAUTH'],
-            group_id=config['VK_GROUP_ID'],
+            group_id=config['VK_GROUP_ID']
         )
     )
 
