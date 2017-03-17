@@ -9,7 +9,7 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 from config import config
 from error import ApiException
 from response import success, error, error_with
-from streamable import Streamable, AsyncStreamableWrapper
+from upload import VkUploader, AsyncUploaderWrapper
 from twitch import Twitch, AsyncTwitchWrapper
 
 
@@ -20,18 +20,18 @@ def generate_video_name(channel_name):
 
 # noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
 class TwitchStreamHandler(web.RequestHandler):
-    def initialize(self, twitch, streamable):
+    def initialize(self, twitch, uploader):
         self.twitch = twitch
-        self.streamable = streamable
+        self.uploader = uploader
 
     async def get(self):
         name = generate_video_name(config['TWITCH_CHANNEL'])
 
         data = await self.twitch.get_stream_data()
-        response = await self.streamable.upload(name, data)
+        response = await self.uploader.upload(name, data)
 
         self.write_json(success({
-            'url': self.streamable.video_url(response.shortcode),
+            'url': response.url,
             'name': name
         }))
 
@@ -50,11 +50,11 @@ class TwitchStreamHandler(web.RequestHandler):
         self.finish()
 
 
-def application(twitch, streamable):
+def application(twitch, uploader):
     return web.Application([
         (r"/api/v1/upload", TwitchStreamHandler, dict(
             twitch=twitch,
-            streamable=streamable
+            uploader=uploader
         )),
     ])
 
@@ -82,14 +82,16 @@ def main():
 
     asyncio.Task(pereodic_ping_read(async_twitch, 60))
 
-    streamable = AsyncStreamableWrapper(
+    uploader = AsyncUploaderWrapper(
         loop,
-        streamable=Streamable(
-            client=httpclient.AsyncHTTPClient()
+        uploader=VkUploader(
+            client=httpclient.AsyncHTTPClient(),
+            token=config['VK_OAUTH'],
+            group_id=config['VK_GROUP_ID'],
         )
     )
 
-    app = application(async_twitch, streamable)
+    app = application(async_twitch, uploader)
     app.listen(config['PORT'])
 
     print('Listening port {port}...'.format(port=config['PORT']))
