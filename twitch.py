@@ -2,12 +2,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 from livestreamer import Livestreamer
 
+from buffer import RingBuffer
 from error import StreamBufferIsEmptyException
 
 
 class Twitch(object):
-    BUFFER_PING_PART = 5
-
     RING_BUFFER_SIZE_KEY = 'ringbuffer-size'
     OAUTH_TOKEN_KEY = 'oauth_token'
     LIVESTREAMER_PLUGIN_TWITCH = 'twitch'
@@ -16,7 +15,12 @@ class Twitch(object):
         self.oauth = oauth
         self.resolution = resolution
         self.channel = channel
-        self.buffer_size = buffer_size + (buffer_size // self.BUFFER_PING_PART)
+
+        self.buffer_size = buffer_size
+        self.buffer = RingBuffer(
+            buffer_size=buffer_size
+        )
+
         self.initialized = False
         self.stream = None
 
@@ -25,35 +29,27 @@ class Twitch(object):
             self.stream.close()
 
     def initialize(self):
+        self.buffer.clear()
         stream = self._init_stream(self.oauth, self.channel)
         if stream:
             self.initialized = True
             self.stream = stream.open()
 
     def get_stream_data(self):
-
-        # Try to initialize again
         if not self.initialized:
             print('Read: Try to initialize')
             self.initialize()
             raise StreamBufferIsEmptyException
 
-        data = self.stream.read(self.buffer_size)
-        print('Read: {length}'.format(length=len(data)))
+        return self.buffer.read_all()
 
-        if len(data) == 0:
-            print('Read: Try to initialize')
-            self.initialize()
-            raise StreamBufferIsEmptyException
-
-        return data
-
-    def ping_read(self):
+    def update_stream_data(self):
         if self.initialized:
-            data = self.stream.read(self.buffer_size // self.BUFFER_PING_PART)
-            print('Ping Read: {length}'.format(length=len(data)))
+            data = self.stream.read(self.buffer_size)
+            print('Update: {length}'.format(length=len(data)))
+            self.buffer.write(data)
         else:
-            print('Ping Read: Try to initialize')
+            print('Update: Try to initialize')
             self.initialize()
 
     def stream_initialized(self):
@@ -89,5 +85,5 @@ class AsyncTwitchWrapper(object):
     async def get_stream_data(self):
         return await self.loop.run_in_executor(self.executor, self.twitch.get_stream_data)
 
-    async def ping_read(self):
-        return await self.loop.run_in_executor(self.executor, self.twitch.ping_read)
+    async def update_stream_data(self):
+        await self.loop.run_in_executor(self.executor, self.twitch.update_stream_data)

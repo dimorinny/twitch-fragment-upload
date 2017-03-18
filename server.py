@@ -61,9 +61,9 @@ def application(twitch, uploader):
     ])
 
 
-async def pereodic_ping_read(twitch, interval):
+async def pereodic_stream_updates(twitch, interval):
     while True:
-        await twitch.ping_read()
+        await twitch.update_stream_data()
         await asyncio.sleep(interval)
 
 
@@ -74,7 +74,7 @@ def main():
     async_twitch = AsyncTwitchWrapper(
         loop,
         Twitch(
-            config['RING_BUFFER_SIZE'],
+            config['RING_BUFFER_SIZE'] * 1024 * 1024,
             config['STREAM_RESOLUTION'],
             config['TWITCH_OAUTH'],
             config['TWITCH_CHANNEL']
@@ -82,7 +82,7 @@ def main():
     )
     async_twitch.initialize()
 
-    asyncio.Task(pereodic_ping_read(async_twitch, 60))
+    asyncio.Task(pereodic_stream_updates(async_twitch, 10))
 
     uploader = AsyncUploaderWrapper(
         loop,
