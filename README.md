@@ -2,7 +2,7 @@
 
 [![](https://images.microbadger.com/badges/image/dimorinny/twitch-fragment-uploader.svg)](https://microbadger.com/images/dimorinny/twitch-fragment-uploader "Get your own image badge on microbadger.com")
 
-Web server for uploading Twitch fragments to [streamable](https://streamable.com/) service, that can used as microservice in your applications. For load stream fragments [livestreamer](https://github.com/chrippa/livestreamer) library is used.
+Web server for uploading Twitch fragments to [vk](https://vk.com/)   group service, that can used as microservice in your applications. For load stream fragments [livestreamer](https://github.com/chrippa/livestreamer) library is used.
 
 ### Run server
 
@@ -11,14 +11,20 @@ docker run \
   -p 8080:8080 \
   -e "TWITCH_OAUTH=<TWITCH_OAUTH_TOKEN>" \
   -e "TWITCH_CHANNEL=<CHANNEL_NAME>" \
-  dimorinny/twitch-fragment-uploader
+  -e "VK_OAUTH=<VK_OAUTH_TOKEN>" \
+  -e "VK_GROUP_ID=<VK_GROUP_ID>" \
+  -e "TIMEZONE=<TIMEZONE>" \
+dimorinny/twitch-fragment-uploader
 ```
 
 **Environment parameters:**
 
 * **TWITCH\_OAUTH** - OAuth Twitch token
-* **TWITCH\_CHANNEL** - Channel name
-* **RING\_BUFFER\_SIZE** - Stream buffer size. This is internal param of [livestreamer](https://github.com/chrippa/livestreamer) library. This parameter determines uploaded fragment size. (20 MB by default)
+* **TWITCH\_CHANNEL** - Twitch channel name
+* **VK\_OAUTH** - OAuth Vk token.
+* **VK\_GROUP** - Vk group id (without `-`), where video will be uploaded
+* **TIMEZONE** - Uploaded video name generates from current date using passed timezone. For understand timezone format you can look at [specification](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+* **RING\_BUFFER\_SIZE** - Stream buffer size. This is internal param of [livestreamer](https://github.com/chrippa/livestreamer) library. This parameter determines uploaded fragment size. (10 MB by default)
 * **PORT** - Http proxy port (8080 by default)
 
 ### Usage
@@ -35,7 +41,7 @@ After that server returns uploading with video link and name. For example after 
 {
   "status": "success",
   "response": {
-    "url": "https://streamable.com/e6h19",
+    "url": "https://vk.com/video_ext.php?oid=-142832429&id=456233077&hash=3d84b9ccf4e94405",
     "name": "05.03.17 22:29 cahchec"
   }
 }
