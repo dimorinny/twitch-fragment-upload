@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import suppress
 from datetime import datetime
 
 import pytz
@@ -63,8 +64,9 @@ def application(twitch, uploader):
 
 async def pereodic_stream_updates(twitch, interval):
     while True:
-        await twitch.update_stream_data()
-        await asyncio.sleep(interval)
+        with suppress(Exception):
+            await twitch.update_stream_data()
+            await asyncio.sleep(interval)
 
 
 def main():
