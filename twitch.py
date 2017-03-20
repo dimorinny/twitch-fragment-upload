@@ -47,7 +47,13 @@ class Twitch(object):
         if self.initialized:
             data = self.stream.read(self.buffer_size)
             print('Update: {length}'.format(length=len(data)))
-            self.buffer.write(data)
+
+            if len(data) != 0:
+                self.buffer.write(data)
+            else:
+                print('Update: Try to initialize')
+                self.initialize()
+
         else:
             print('Update: Try to initialize')
             self.initialize()
