@@ -64,6 +64,7 @@ class VkUploader(object):
                 name=name,
                 group_id=self.group_id,
                 version=self.VK_API_VERSION,
+                wallpost=1,
                 access_token=self.token
             )
         )
