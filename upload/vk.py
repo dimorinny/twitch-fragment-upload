@@ -58,7 +58,8 @@ class VkUploader(object):
                 version=self.VK_API_VERSION,
                 wallpost=1,
                 access_token=self.token
-            )
+            ),
+            timeout=self.REQUEST_TIMEOUT
         )
 
     def _get_uploaded(self, video_id):
@@ -69,12 +70,15 @@ class VkUploader(object):
                     .format(group_id=self.group_id, video_id=video_id),
                 version=self.VK_API_VERSION,
                 access_token=self.token
-            )
+            ),
+            timeout=self.REQUEST_TIMEOUT
         )
 
-    @staticmethod
-    def _upload(url, data):
+    def _upload(self, url, data):
         return requests.post(
             url=url,
-            files={'file': BytesIO(data)}
+            files=dict(
+                file=BytesIO(data)
+            ),
+            timeout=self.REQUEST_TIMEOUT
         )

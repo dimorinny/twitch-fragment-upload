@@ -4,7 +4,7 @@ config = {
     'TWITCH_OAUTH': None,
     'TWITCH_CHANNEL': None,
     'RING_BUFFER_SIZE': 10,
-    'STREAM_RESOLUTION': 'medium',
+    'STREAM_RESOLUTION': '720p',
     'PORT': 8080,
     'TIMEZONE': 'UTC',
     'UPLOAD_BACKEND': None,

@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from tornado import httpclient
 
 from config import config
+from upload.streamable import StreamableUploader
 from upload.vk import VkUploader
 
 
@@ -35,6 +36,9 @@ def resolve_uploader():
             client=httpclient.AsyncHTTPClient(),
             token=config['VK_OAUTH'],
             group_id=config['VK_GROUP_ID']
+        ),
+        'streamable': lambda: StreamableUploader(
+            client=httpclient.AsyncHTTPClient()
         )
     }
 
@@ -45,4 +49,4 @@ def resolve_uploader():
             backends=', '.join(providers.keys())
         ))
 
-    return providers[config['UPLOAD_BACKEND']]
+    return providers[config['UPLOAD_BACKEND']]()
