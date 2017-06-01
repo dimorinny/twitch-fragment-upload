@@ -1,17 +1,8 @@
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
 import requests
 
 from error import UploadingException
-
-
-class UploadResult(object):
-    INVALID_ID = -1
-
-    def __init__(self, response):
-        self.status = 'success'
-        self.url = response['player']
 
 
 class VkUploader(object):
@@ -53,8 +44,9 @@ class VkUploader(object):
         if not item:
             raise UploadingException
 
+        from upload.base import UploadResult
         return UploadResult(
-            response=item
+            url=item['player']
         )
 
     def _prepare_upload(self, name):
@@ -85,19 +77,4 @@ class VkUploader(object):
         return requests.post(
             url=url,
             files={'file': BytesIO(data)}
-        )
-
-
-class AsyncUploaderWrapper(object):
-    def __init__(self, loop, uploader):
-        self.executor = ThreadPoolExecutor()
-        self.loop = loop
-        self.uploader = uploader
-
-    async def upload(self, name, data):
-        return await self.loop.run_in_executor(
-            self.executor,
-            self.uploader.upload,
-            name,
-            data
         )

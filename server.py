@@ -3,7 +3,6 @@ from contextlib import suppress
 from datetime import datetime
 
 import pytz
-from tornado import httpclient
 from tornado import web
 from tornado.escape import json_encode
 from tornado.platform.asyncio import AsyncIOMainLoop
@@ -11,8 +10,8 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 from config import config
 from error import ApiException
 from response import success, error, error_with
-from upload import VkUploader, AsyncUploaderWrapper
 from twitch import Twitch, AsyncTwitchWrapper
+from upload.base import AsyncUploaderWrapper, resolve_uploader
 
 
 def generate_video_name(channel_name, timezone):
@@ -88,11 +87,7 @@ def main():
 
     uploader = AsyncUploaderWrapper(
         loop,
-        uploader=VkUploader(
-            client=httpclient.AsyncHTTPClient(),
-            token=config['VK_OAUTH'],
-            group_id=config['VK_GROUP_ID']
-        )
+        uploader=resolve_uploader()
     )
 
     app = application(async_twitch, uploader)
