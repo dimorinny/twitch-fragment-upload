@@ -34,8 +34,13 @@ dimorinny/twitch-fragment-uploader
 
 For `vk` backend:
 
-* **VK\_OAUTH** - OAuth Vk token
-* **VK\_GROUP** - Vk group id (without `-`), where video will be uploaded
+* **VK\_OAUTH** - OAuth Vk token **(required)**
+* **VK\_GROUP** - Vk group id (without `-`), where video will be uploaded **(required)**
+
+For `streamable` backed:
+
+* **STREAMABLE\_USER** - Streamable login **(optional)**
+* **STREAMABLE\_PASSWORD** - Streamable password **(optional)**
 
 ### Usage
 
