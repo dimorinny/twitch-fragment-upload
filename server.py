@@ -11,7 +11,8 @@ from config import config
 from error import ApiException
 from response import success, error, error_with
 from twitch import Twitch, AsyncTwitchWrapper
-from upload.base import AsyncUploaderWrapper, resolve_uploader
+from upload.base import AsyncUploaderWrapper
+from upload.resolve import resolve_uploader
 
 
 def generate_video_name(channel_name, timezone):

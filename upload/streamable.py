@@ -3,9 +3,10 @@ from io import BytesIO
 import requests
 
 from error import UploadingException
+from upload.base import BaseUploader, UploadResult
 
 
-class StreamableUploader(object):
+class StreamableUploader(BaseUploader):
     UPLOAD_ENDPOINT = 'https://api.streamable.com/upload'
     URL_TEMPLATE = 'https://streamable.com/e/{code}'
 
@@ -25,7 +26,6 @@ class StreamableUploader(object):
         if upload_result.status_code != requests.codes.ok or json_result['status'] != 1:
             raise UploadingException
 
-        from upload.base import UploadResult
         return UploadResult(
             url=self.URL_TEMPLATE.format(code=upload_result.json()['shortcode'])
         )

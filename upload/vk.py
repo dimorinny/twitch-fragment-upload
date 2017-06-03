@@ -3,9 +3,10 @@ from io import BytesIO
 import requests
 
 from error import UploadingException
+from upload.base import UploadResult, BaseUploader
 
 
-class VkUploader(object):
+class VkUploader(BaseUploader):
     VK_API_VERSION = '5.62'
     PREPARE_UPLOAD_URL = 'https://api.vk.com/method/video.save'
     UPLOADED_VIDEO_INFO_URL = 'https://api.vk.com/method/video.get'
@@ -44,7 +45,6 @@ class VkUploader(object):
         if not item:
             raise UploadingException
 
-        from upload.base import UploadResult
         return UploadResult(
             url=item['player']
         )

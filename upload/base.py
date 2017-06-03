@@ -1,18 +1,13 @@
+import abc
 from concurrent.futures import ThreadPoolExecutor
 
-from tornado import httpclient
 
-from config import config
-from upload.streamable import StreamableUploader
-from upload.vk import VkUploader
+class BaseUploader(object):
+    __metaclass__ = abc.ABCMeta
 
-
-class UploadResult(object):
-    INVALID_ID = -1
-
-    def __init__(self, url):
-        self.status = 'success'
-        self.url = url
+    @abc.abstractmethod
+    def upload(self, name, data):
+        pass
 
 
 class AsyncUploaderWrapper(object):
@@ -30,25 +25,9 @@ class AsyncUploaderWrapper(object):
         )
 
 
-def resolve_uploader():
-    providers = {
-        'vk': lambda: VkUploader(
-            client=httpclient.AsyncHTTPClient(),
-            token=config['VK_OAUTH'],
-            group_id=config['VK_GROUP_ID']
-        ),
-        'streamable': lambda: StreamableUploader(
-            client=httpclient.AsyncHTTPClient(),
-            user=config['STREAMABLE_USER'],
-            password=config['STREAMABLE_PASSWORD']
-        )
-    }
+class UploadResult(object):
+    INVALID_ID = -1
 
-    if config['UPLOAD_BACKEND'] not in providers:
-        raise Exception('''
-        Upload backend is not specified.
-        Allowed backends: {backends}'''.format(
-            backends=', '.join(providers.keys())
-        ))
-
-    return providers[config['UPLOAD_BACKEND']]()
+    def __init__(self, url):
+        self.status = 'success'
+        self.url = url
