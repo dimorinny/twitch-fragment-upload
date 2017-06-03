@@ -11,14 +11,16 @@ class StreamableUploader(object):
 
     REQUEST_TIMEOUT = 60 * 3  # 3 minutes
 
-    def __init__(self, client):
+    def __init__(self, client, user, password):
         self.client = client
+        self.user = user
+        self.password = password
 
     def upload(self, name, data):
         upload_result = self._upload(name, data)
-        json_result = upload_result.json()
-
         print('Upload: ' + upload_result.text)
+
+        json_result = upload_result.json()
 
         if upload_result.status_code != requests.codes.ok or json_result['status'] != 1:
             raise UploadingException
@@ -37,5 +39,11 @@ class StreamableUploader(object):
             files=dict(
                 file=BytesIO(data)
             ),
-            timeout=self.REQUEST_TIMEOUT
+            timeout=self.REQUEST_TIMEOUT,
+            auth=self._auth_data()
         )
+
+    def _auth_data(self):
+        return (self.user, self.password) \
+            if bool(self.user and self.password) \
+            else None

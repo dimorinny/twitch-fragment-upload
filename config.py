@@ -8,6 +8,8 @@ config = {
     'PORT': 8080,
     'TIMEZONE': 'UTC',
     'UPLOAD_BACKEND': None,
+    'STREAMABLE_USER': None,
+    'STREAMABLE_PASSWORD': None,
     'VK_OAUTH': None,
     'VK_GROUP_ID': None
 }

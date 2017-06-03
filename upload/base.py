@@ -38,7 +38,9 @@ def resolve_uploader():
             group_id=config['VK_GROUP_ID']
         ),
         'streamable': lambda: StreamableUploader(
-            client=httpclient.AsyncHTTPClient()
+            client=httpclient.AsyncHTTPClient(),
+            user=config['STREAMABLE_USER'],
+            password=config['STREAMABLE_PASSWORD']
         )
     }
 
